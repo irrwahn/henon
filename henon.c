@@ -35,18 +35,18 @@ enum vartype {
 static ppm_t *canvas = NULL;
 static pal_t *pal = NULL;
 static hparm_t parm = {
-	.a0 = 0.0000,	// from angle
-	.a1 = 6.2832,	// to angle
-	.as = 0.0100,	// angle increment (per frame)
-	.v0 = 0.0500,	// from seed value
-	.v1 = 1.0000,	// to seed value
-	.vs = 0.0500,	// seed value increment
-	.iter = 3000,	// iterations per seed value
-	.xdim = 640,	// width
-	.ydim = 480,	// height
-	.xoff = 0,		// horizontal offset
-	.yoff = 0,		// vertical offset
-	.zoom = 1.0,	// zoom factor
+	.a0 = 0.0000,	/* from angle */
+	.a1 = 6.2832,	/* to angle */
+	.as = 0.0100,	/* angle increment (between frames) */
+	.v0 = 0.0500,	/* from seed value */
+	.v1 = 1.0000,	/* to seed value */
+	.vs = 0.0500,	/* seed value increment */
+	.iter = 3000,	/* iterations per seed value */
+	.xdim = 640,	/* image width */
+	.ydim = 480,	/* image height */
+	.xoff = 0,		/* horizontal offset of origin */
+	.yoff = 0,		/* vertical offset of origin */
+	.zoom = 1.0,	/* zoom factor */
 };
 
 static struct {
@@ -77,8 +77,10 @@ static void print_usage( const char *argv0 )
 		"%s: Create parametrized Hénon Mappings as a series of PPM images.\n"
 		"Usage: %s [-h] [-h] [-c paramfile] [-p palettefile]\n"
 		"  -c : Set parameter file path; default: none.\n"
+		"  -o : Set output path prefix; default: .\n"
 		"  -p : Set color palette file path, first entry is background color;\n"
 		"       default: none.\n"
+		"  -f : Flip color palette.\n"
 		"  -v : Increase verbosity, show progress.\n"
 		"  -h : Display this help text and exit.\n"
 		, p, p );
@@ -212,25 +214,31 @@ static int dumpparm( FILE *fp )
 }
 
 
-#define SCALE(A,B)		((((A)<(B))?(A):(B))/2)	// half the smaller arg
+/*
+ * Draw single frame by sweeping over start value interval with 
+ * a constant angle.
+ */
+
+/* Interface macros to keep henon_1() clean */
+#define SCALE(A,B,Z)	((double)(((A)<(B))?(A):(B))/2*(Z))
 #define NUMCOL			(pal->ent)
 #define COLOR(N)		(pal->col[(N)])
 #define DRAWDOT(X,Y,C)	ppm_drawdot(canvas,(X),(Y),(C))
 
-/*
- * Draw single frame by sweeping over start value interval with a 
- * constant angle.
- */
 static int henon_1( hparm_t *pp )
 {
 	int colidx = 0;
 	int hx = pp->xdim / 2 + pp->xoff * pp->zoom;
 	int hy = pp->ydim / 2 + pp->yoff * pp->zoom;
-	int hz = SCALE( pp->xdim, pp->ydim ) * pp->zoom;
+	unsigned hz = SCALE( pp->xdim, pp->ydim, pp->zoom );
 	double sin_a = sin( pp->a );
 	double cos_a = cos( pp->a );
 	double x, y, v, h;
 
+	if ( pp->v0 > pp->v1 )
+		h = pp->v0, pp->v0 = pp->v1, pp->v1 = h;
+	if ( pp->vs < 0.0 )
+		pp->vs = -pp->vs;
 	for ( v = pp->v0; v <= pp->v1; v += pp->vs )
 	{
 		colidx = colidx % (NUMCOL-1) + 1;
@@ -251,7 +259,7 @@ static int henon_1( hparm_t *pp )
 #undef DRAWDOT
 
 /*
- * Create series of frames by sweeping over angle, calling henon_1() 
+ * Create series of frames by sweeping over [a0;a1], calling henon_1() 
  * for each increment.
  */
 static int henon( hparm_t *pp, const char *dir, int verbose )
@@ -260,13 +268,29 @@ static int henon( hparm_t *pp, const char *dir, int verbose )
 	char fn[1024];
 	FILE *fp;
 
-	if ( 0.0 >= pp->as || 0.0 >= pp->vs )
-		err_exit( "Increments must always be positive!" );
+	errno = 0;
+	if (   ( pp->as > 0.0 && pp->a0 > pp->a1 )
+		|| ( pp->as < 0.0 && pp->a0 < pp->a1 ) )
+		err_exit( "Sign of 'as' must match [a0;a1] interval orientation!" );
+	if ( 0.0 == pp->as )
+		err_exit( "Increment 'as' must not be zero!" );
+	if (   ( pp->vs > 0.0 && pp->v0 > pp->v1 )
+		|| ( pp->vs < 0.0 && pp->v0 < pp->v1 ) )
+		err_exit( "Sign of 'vs' must match [v0;v1] interval orientation!" );
+	if ( 0.0 == pp->vs )
+		err_exit( "Increment 'vs' must not be zero!" );
+	if ( 0.0 >= pp->zoom )
+		err_exit( "Zoom must be positive!" );
+
 	if ( !dir || !*dir )
 		dir = ".";
 	if ( verbose )
 		printf( "Generating %d frames ...\n", (int)((pp->a1-pp->a0)/pp->as) + 1 );
-	for ( pp->a = pp->a0; pp->a <= pp->a1; pp->a += pp->as )
+		
+	for ( pp->a = pp->a0; 
+		  pp->as > 0.0 ? pp->a <= pp->a1 : pp->a >= pp->a1;
+		  pp->a += pp->as 
+		)
 	{
 		snprintf( fn, sizeof fn, "%s/%05zu.ppm", dir, frame_no );
 		if ( verbose && 0 == frame_no % 25 )
