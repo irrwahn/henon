@@ -7,10 +7,10 @@
 
 #include "ppmgfx.h"
 
-typedef 
-	struct pal_t_struct 
+typedef
+	struct pal_t_struct
 	pal_t;
-	
+
 struct pal_t_struct {
 	size_t ent, max;
 	ppc_t *col;

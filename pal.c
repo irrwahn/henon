@@ -8,7 +8,7 @@
 int pal_create( pal_t **pp )
 {
 	pal_t *p;
-		
+
  	if ( !pp )
 		return errno = EINVAL, -1;
 	if ( NULL == ( p = malloc( sizeof *p ) ) )
@@ -26,7 +26,7 @@ int pal_destroy( pal_t **pp )
 	free( (*pp)->col );
 	free( *pp );
 	*pp = NULL;
-	return 0;	
+	return 0;
 }
 
 int pal_clear( pal_t *p )
@@ -42,7 +42,7 @@ int pal_clear( pal_t *p )
 int pal_resize( pal_t *p, size_t nmax )
 {
 	ppc_t *t;
-	
+
 	if ( !p )
 		return errno = EINVAL, -1;
 	if ( nmax == p->max )
@@ -78,7 +78,7 @@ int pal_read( pal_t *p, FILE *f )
 	char s[256];
 	char *ep;
 	ppc_t col;
-	
+
 	if ( !f || !p )
 		return errno = EINVAL, -1;
 	while ( NULL != fgets( s, sizeof s, f ) )

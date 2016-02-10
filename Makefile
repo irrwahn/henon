@@ -1,14 +1,21 @@
 PROJECT := henon
 
+USE_PNG ?= 1
+
 CC      ?= gcc
 INCS    :=
-CFLAGS  := $(INCS) -W -Wall -Wextra -O2 -std=c99
+CFLAGS  := -W -Wall -Wextra -O2 -std=c99
 # Compiler flags for auto dependency generation:
 CFLAGS  += -MMD -MP
 
 LD      := $(CC)
 LIBS    :=
-LDFLAGS := $(LIBS) -lm
+LDFLAGS := -lm
+
+ifeq ($(USE_PNG),1)
+	CFLAGS  += -DUSE_PNG
+	LDFLAGS	+= -lpng
+endif
 
 STRIP   := strip
 RM      := rm -f
@@ -20,22 +27,25 @@ DEP     := $(OBJ:%.o=%.d)
 SELF    := $(lastword $(MAKEFILE_LIST))
 
 
-.PHONY: all clean distclean
+.PHONY: all clean distclean demo
 
 all: $(BIN)
 
 $(BIN): $(OBJ) $(SELF)
-	$(LD) $(LDFLAGS) $(OBJ) -o $(BIN)
+	$(LD) $(LIBS) $(LDFLAGS) $(OBJ) -o $(BIN)
 	$(STRIP) $(BIN)
 
 %.o: %.c $(SELF)
-	$(CC) -c $(CFLAGS) -o $*.o $*.c
+	$(CC) -c $(INCS) $(CFLAGS) -o $*.o $*.c
 
 clean:
 	$(RM) $(BIN) $(OBJ) $(DEP)
 
 distclean: clean
-	$(RM) *.avi *.mp4 *.gif *.ppm
-	$(RM) -r ppm
+	$(RM) *.avi *.mp4 *.mkv *.gif *.ppm *.png
+	$(RM) -r demo
+
+demo: all
+	./demo.sh
 
 -include $(DEP)
