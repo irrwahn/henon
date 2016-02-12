@@ -64,8 +64,10 @@ int ppm_fill( ppm_t *p, ppc_t col )
 
 	if ( !p )
 		return errno = EINVAL, -1;
+	SETPIXEL( &p->b[0], col );
+	col = p->b[0];
 	while ( sz-- )
-		SETPIXEL( &p->b[sz], col );
+		p->b[sz] = col;
 	return 0;
 }
 
@@ -76,6 +78,7 @@ static inline int ppm_drawdot_unsafe( ppm_t *p, size_t x, size_t y, ppc_t col )
 }
 
 #undef SETPIXEL
+
 
 int ppm_drawdot( ppm_t *p, size_t x, size_t y, ppc_t col )
 {
@@ -104,7 +107,7 @@ int ppm_write( ppm_t *p, FILE *f, enum ppm_fmt fmt )
 			fputc( *b++, f ); /* R */
 			fputc( *b++, f ); /* G */
 			fputc( *b++, f ); /* B */
-			b++; /* A */
+			b++;              /* A */
 		}
 		if ( 0 == errno )
 		{
