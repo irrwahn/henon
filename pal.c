@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 
 #include "pal.h"
@@ -76,15 +77,20 @@ int pal_add( pal_t *p, ppc_t col )
 int pal_read( pal_t *p, FILE *f )
 {
 	char s[256];
-	char *ep;
+	char *sp, *ep;
 	ppc_t col;
 
 	if ( !f || !p )
 		return errno = EINVAL, -1;
 	while ( NULL != fgets( s, sizeof s, f ) )
 	{
-		col = strtoul( s, &ep, 16 );
-		if ( ep != s && 0 != pal_add( p, col ) )
+		/* Accept '#' as valid prefix for hexadecimal constants. */
+		for ( sp = s; isspace( (unsigned char)sp[0] ); ++sp )
+			;
+		if ( '#' == sp[0] && isxdigit( (unsigned char)sp[1] ) )
+			++sp;
+		col = strtoul( sp, &ep, 16 );
+		if ( ep != sp && 0 != pal_add( p, col ) )
 			return -1;
 	}
 	return 0;
