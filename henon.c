@@ -80,7 +80,7 @@ static void print_usage( const char *argv0 )
 	const char *p = ( NULL == ( p = strrchr( argv0, '/' ) ) ) ? argv0 : p+1;
 	fprintf( stderr,
 		"%s: Create parametrized Hénon Mappings as a series of PPM images.\n"
-		"Usage: %s [-h] [-h] [-c paramfile] [-p palettefile]\n"
+		"Usage: %s [options] [-c paramfile] [-p palettefile] [-o output_prefix]\n"
 		"  -c : Set parameter file path; default: none.\n"
 		"  -o : Set output path prefix; default: .\n"
 		"  -i : Write an info file for each output file; default: no.\n"
