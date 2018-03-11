@@ -10,8 +10,8 @@ echo "Annotating $CNT frames ..."
 
 for F in $LST ; do
   echo -ne "\r$CNT "
-  cat "$F.txt" | convert "$F" -font "Courier-New" -pointsize 12 \
-				-fill white -undercolor black -annotate +20+20 @- "$F"
+  convert "$F" -font "Courier-New" -pointsize 12 \
+    -fill white -undercolor black -annotate +20+20 "$(cat "$F.txt")" "$F"
   (( CNT -= 1 ))
 done
 
