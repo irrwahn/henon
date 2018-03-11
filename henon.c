@@ -1,3 +1,11 @@
+/*
+ * This file is part of the henon project.
+ *
+ * Copyright 2016 Urban Wallasch <irrwahn35@freenet.de>
+ * See LICENSE file for more details.
+ *
+ */
+
 /* Henon Mappings */
 
 #include <getopt.h>
@@ -321,7 +329,7 @@ static int henon( hparm_t *pp, const char *dir )
 		  pp->as > 0.0 ? pp->a <= pp->a1 : pp->a >= pp->a1;
 		  pp->a += pp->as )
 	{
-		snprintf( fn, sizeof fn, "%s/%05zu.%s", 
+		snprintf( fn, sizeof fn, "%s/%05zu.%s",
 					dir, frame_no, writepng ? "png" : "ppm" );
 		if ( verbose && 0 == frame_no % 25 )
 			printf( "\r%s [a=%.04f]", fn, pp->a ), fflush( stdout );
@@ -336,7 +344,7 @@ static int henon( hparm_t *pp, const char *dir )
 		fclose( fp );
 		if ( writeinfo )
 		{
-			snprintf( fn, sizeof fn, "%s/%05zu.%s.txt", 
+			snprintf( fn, sizeof fn, "%s/%05zu.%s.txt",
 						dir, frame_no, writepng ? "png" : "ppm" );
 			writeinfofile( fn, pp );
 		}

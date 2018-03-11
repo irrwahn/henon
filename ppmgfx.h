@@ -1,3 +1,10 @@
+/*
+ * This file is part of the henon project.
+ *
+ * Copyright 2016 Urban Wallasch <irrwahn35@freenet.de>
+ * See LICENSE file for more details.
+ *
+ */
 
 #ifndef PPMGFX_H_INCLUDED
 #define PPMGFX_H_INCLUDED
