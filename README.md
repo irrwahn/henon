@@ -109,7 +109,6 @@ tools to be available on the runtime system:
 
         imagemagick  # convert utility used for image annotation
         ffmpeg       # GIF, AVI, MP4, MKV generation
-        mpv          # optional, only used for video playback
 
 The `demo.sh` script performs all steps from image generation to video
 assembly using a sane set of default parameters.
